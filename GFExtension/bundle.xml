@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<update-bundle version="1.0"
+               xmlns="http://xmlns.oracle.com/jdeveloper/updatebundle"
+               xmlns:u="http://xmlns.oracle.com/jdeveloper/update">
+	<!-- The id *MUST* match exactly the id in your extension.xml. -->
+  	<u:update id="org.adfemg.gfextension">
+	    	<!-- The name of your extension as you want it to appear under the check for update menu -->
+	    	<u:name>GlassFish Extension For JDev</u:name>
+	    	<!-- The version *MUST* match exactly the version in your extension.xml. -->
+	    	<u:version>12</u:version>
+	    	<u:author>ADF-EMG</u:author>
+	    	<u:author-url>https://github.com/adfemg</u:author-url>
+	    	<u:description>This extension provides menu options that allow you to start/stop/debug and administer a GlassFish server directly from inside JDeveloper. 
+	    		It is based on the source code provided by Shay Shmeltzer @JDevShay from his GlassFish Extension for JDeveloper 11g. 
+	    		Supports Win/Linux/Mac.
+	    	</u:description>
+    
+		<u:requirements>
+	      		<u:requires-extension id="oracle.jdeveloper" minVersion="12.1.2.0.0" maxVersion="12.2.9.9.9" />
+	    	</u:requirements>
+	</u:update>
+</update-bundle> 
+

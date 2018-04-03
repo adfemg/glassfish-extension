@@ -1,0 +1,5 @@
+Bundle-ManifestVersion: 2.0
+Bundle-Version: 12
+Bundle-SymbolicName: org.adfemg.gfextension
+Bundle-ClassPath: .
+Require-Bundle: oracle.ide,oracle.uic,oracle.javatools-nodeps,oracle.idert,oracle.javatools,oracle.ide.webbrowser

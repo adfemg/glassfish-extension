@@ -1,0 +1,114 @@
+<extension id="org.adfemg.gfextension" version="12" esdk-version="2.0" rsbundle-class="org.adfemg.gfextension.Res"
+           xmlns="http://jcp.org/jsr/198/extension-manifest">
+    <name>${EXTENSION_NAME}</name>
+    <owner>${EXTENSION_OWNER}</owner>
+    <feature id="org.adfemg.gfextension" xmlns="http://xmlns.oracle.com/ide/extension">
+        <name>${EXTENSION_NAME}</name>
+        <description>${EXTENSION_DESC}</description>
+        <type>
+            <technology key="Extension"/>
+        </type>
+    </feature>
+    <trigger-hooks xmlns="http://xmlns.oracle.com/ide/extension">
+        <triggers>
+            <actions xmlns="http://xmlns.oracle.com/jdeveloper/1013/extension">
+                <action id="org.adfemg.gfextension.glassfishstart">
+                    <properties>
+                        <property name="Name">${START_ACTION_NAME}</property>
+                        <property name="SmallIcon">res:/org/adfemg/gfextension/ui/img/gf001.gif</property>
+                        <property name="LongDescription">${START_ACTION_DESC}</property>
+                    </properties>
+                </action>
+                <action id="org.adfemg.gfextension.glassfishstop">
+                    <properties>
+                        <property name="Name">${STOP_ACTION_NAME}</property>
+                        <property name="SmallIcon">res:/org/adfemg/gfextension/ui/img/gf002.gif</property>
+                        <property name="LongDescription">${STOP_ACTION_DESC}</property>
+                    </properties>
+                </action>
+                <action id="org.adfemg.gfextension.glassfishdebug">
+                    <properties>
+                        <property name="Name">${DEBUG_ACTION_NAME}</property>
+                        <property name="SmallIcon">res:/org/adfemg/gfextension/ui/img/gf003.gif</property>
+                        <property name="LongDescription">${DEBUG_ACTION_DESC}</property>
+                    </properties>
+                </action>
+                <action id="org.adfemg.gfextension.glassfishadminconsole">
+                    <properties>
+                        <property name="Name">${ADMIN_ACTION_NAME}</property>
+                        <property name="SmallIcon">res:/org/adfemg/gfextension/ui/img/gf004.gif</property>
+                        <property name="LongDescription">${ADMIN_ACTION_DESC}</property>
+                    </properties>
+                </action>
+            </actions>
+            <controllers>
+                <controller class="org.adfemg.gfextension.controller.GlassFishStartController">
+                    <update-rules>
+                        <update-rule rule="always-enabled">
+                            <action id="org.adfemg.gfextension.glassfishstart"/>
+                        </update-rule>
+                    </update-rules>
+                </controller>
+                <controller class="org.adfemg.gfextension.controller.GlassFishStopController">
+                    <update-rules>
+                        <update-rule rule="always-enabled">
+                            <action id="org.adfemg.gfextension.glassfishstop"/>
+                        </update-rule>
+                    </update-rules>
+                </controller>
+                <controller class="org.adfemg.gfextension.controller.GlassFishDebugController">
+                    <update-rules>
+                        <update-rule rule="always-enabled">
+                            <action id="org.adfemg.gfextension.glassfishdebug"/>
+                        </update-rule>
+                    </update-rules>
+                </controller>
+                <controller class="org.adfemg.gfextension.controller.GlassFishAdminConsoleController">
+                    <update-rules>
+                        <update-rule rule="always-enabled">
+                            <action id="org.adfemg.gfextension.glassfishadminconsole"/>
+                        </update-rule>
+                    </update-rules>
+                </controller>
+            </controllers>
+            <settings-ui-hook>
+                <page id="org.adfemg.gfextension.glassfishpreferences" parent-idref="/preferences">
+                    <label>${PREF_PANEL_NAME}</label>
+                    <traversable-class>org.adfemg.gfextension.ui.GlassFishPreferencesPanel</traversable-class>
+                    <tooltip>${PREF_PANEL_TOOLTIP}</tooltip>
+                </page>
+            </settings-ui-hook>
+            <menu-hook xmlns="http://jcp.org/jsr/198/extension-manifest">
+                <menus>
+                    <menubar id="javax.ide.view.MAIN_WINDOW_MENUBAR_ID">
+                        <menu id="Run">
+                            <!--useful inks: 
+                            https://blogs.oracle.com/jdevextensions/entry/how_to_find_the_idref_for_most_menu_commands
+                            https://blogs.oracle.com/jdevextensions/entry/declarative_menus_in_jdeveloper_extensions_part_four
+                            http://docs.oracle.com/cd/E50629_01/jdev/ESDKJ/oracle/ide/controller/MenuConstants.html
+                            -->
+                            <section id="org.adfemg.gfextension" displayName="${MENU_NAME}" weight="5.501">
+                                <item action-ref="org.adfemg.gfextension.glassfishstart"/>
+                                <item action-ref="org.adfemg.gfextension.glassfishstop"/>
+                                <item action-ref="org.adfemg.gfextension.glassfishdebug"/>
+                                <item action-ref="org.adfemg.gfextension.glassfishadminconsole"/>
+                            </section>
+                        </menu>
+                    </menubar>
+                </menus>
+                <toolbars>
+                    <toolbar id="javax.ide.view.MAIN_WINDOW_TOOLBAR_ID">
+                        <section id="org.adfemg.gfextension" after="oracle.jdeveloper.TB_RUN_DEBUG_SECTION"
+                                 displayName="${MENU_NAME}">
+                            <item action-ref="org.adfemg.gfextension.glassfishstart"/>
+                            <item action-ref="org.adfemg.gfextension.glassfishstop"/>
+                            <item action-ref="org.adfemg.gfextension.glassfishdebug"/>
+                            <item action-ref="org.adfemg.gfextension.glassfishadminconsole"/>
+                        </section>
+                    </toolbar>
+                </toolbars>
+            </menu-hook>
+        </triggers>
+    </trigger-hooks>
+    <hooks/>
+</extension>

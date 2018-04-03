@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="GFExtension" default="all" basedir=".">
+    <condition property="ojdeploy.executable" value="ojdeploy">
+        <not>
+            <os family="windows"/>
+        </not>
+    </condition>
+    <property file="build.properties"/>
+    <property name="output.compiledir.abs" location="${output.dir}"/>
+    <property name="output.deploydir.abs" location="${deploy.dir}"/>
+    <property name="ojdeploy.executable.abs" location="${oracle.home}/jdev/bin/${ojdeploy.executable}"/>
+    <property name="basedir.abs" location="${basedir}"/>
+    <property name="ojdeploy.outputfile.abs" location="${deploy.dir}/${extension.id}.${extension.version}.zip"/>
+    <!-- =====================================================
+       target: all
+       ===================================================== -->
+    <target name="all" description="Build the project" depends="zip"/>
+    <!-- =====================================================
+       target: clean
+       ===================================================== -->
+    <target name="clean" description="Delete all generated files and directories">
+        <delete includeemptydirs="true" quiet="true">
+            <fileset dir="${output.dir}" includes="**/*"/>
+            <fileset dir="${deploy.dir}" includes="**/*"/>
+        </delete>
+    </target>
+    <!-- =====================================================
+       target: init
+       ===================================================== -->
+    <target name="-init" depends="clean"
+            description="Initialize the build: create directories, call tstamp and other common actions">
+        <fail unless="oracle.home"
+              message="Set property oracle.home with -Doracle.home=... to point to JDeveloper home"/>
+        <tstamp>
+            <!-- date and time in single integer results in too long number which JDev cannot process -->
+            <format property="BUILDID" pattern="yyyyMMdd.HHmm" timezone="UTC"/>
+        </tstamp>
+        <echo>build id is ${BUILDID}</echo>
+        <mkdir dir="${output.dir}"/>
+        <mkdir dir="${deploy.dir}"/>
+    </target>
+    <!-- =====================================================
+       target: jar
+       ===================================================== -->
+    <target name="-jar" description="Deploy JDeveloper profiles" depends="-init">
+        <taskdef name="ojdeploy" classname="oracle.jdeveloper.deploy.ant.OJDeployAntTask"
+                 uri="oraclelib:OJDeployAntTask" classpath="${oracle.home}/jdev/lib/ant-jdeveloper.jar"/>
+        <!-- create absolute paths -->
+        <property name="ojdeploy.abs" location="${oracle.home}/jdev/bin/${ojdeploy.executable}"/>
+        <property name="ojdeploy.jws.abs" location="${ojdeploy.jws}"/>
+        <property name="ojdeploy.output.abs" location="${ojdeploy.output}"/>
+        <property name="ojdeploy.script.abs" location="${deploy.dir}/ojdeploy-build.xml"/>
+        <property name="ojdeploy.log.abs" location="${deploy.dir}/ojdeploy-statuslog.xml"/>
+        <!-- run ojdeploy -->
+        <ora:ojdeploy xmlns:ora="oraclelib:OJDeployAntTask" executable="${ojdeploy.abs}" failonerror="true"
+                      ora:buildscript="${ojdeploy.script.abs}" ora:statuslog="${ojdeploy.log.abs}">
+            <ora:deploy>
+                <ora:parameter name="workspace" value="${ojdeploy.jws.abs}"/>
+                <ora:parameter name="project" value="${ojdeploy.project}"/>
+                <ora:parameter name="profile" value="${ojdeploy.profile}"/>
+                <ora:parameter name="failonwarning" value="true"/>
+                <ora:parameter name="outputfile" value="${ojdeploy.output.abs}"/>
+            </ora:deploy>
+        </ora:ojdeploy>
+        <!-- append build id to version in extension.xml in jar -->
+        <unzip src="${ojdeploy.output.abs}" dest="${deploy.dir}">
+            <patternset includes="META-INF/extension.xml"/>
+        </unzip>
+        <sleep seconds="2"/>
+        <!-- timestamp in ZIP has 2 seconds granularity. Wait long enough to ensure touched xml is new enough -->
+        <replaceregexp file="${deploy.dir}/META-INF/extension.xml" match='(&lt;extension[^>]*\sversion="[^"]*)(")'
+                       replace="\1.${BUILDID}\2" flags="s"/>
+        <zip update="true" destfile="${ojdeploy.output.abs}" basedir="${deploy.dir}" includes="META-INF/extension.xml"/>
+    </target>
+    <!-- =====================================================
+           target: javadoc
+        ===================================================== -->
+    <target name="-javadoc" description="create javadoc and package it in jar" depends="-init">
+        <delete dir="${output.docdir}"/>
+        <javadoc destdir="${output.docdir}" use="true" author="false" version="false" failonerror="true"
+                 sourcepath="src">
+            <classpath>
+                <fileset dir="${oracle.home}/..">
+                    <include name="jdeveloper/jdev/extensions/oracle.ide.audit.jar"/>
+                    <include name="jdeveloper/ide/extensions/oracle.ide.jar"/>
+                    <include name="jdeveloper/jdev/extensions/oracle.ide.xmlef.jar"/>
+                    <include name="oracle_common/modules/oracle.javatools/*.jar"/>
+                </fileset>
+            </classpath>
+        </javadoc>
+        <zip filesonly="true" destfile="${deploy.dir}/${extension.id}-doc.zip">
+            <fileset dir="${output.docdir}"/>
+        </zip>
+    </target>
+    <!-- =====================================================
+       target: distsrc
+       ===================================================== -->
+    <target name="-distsrc" depends="-init" description="Create source zip">
+        <zip filesonly="true" destfile="${deploy.dir}/${extension.id}-src.zip">
+            <fileset dir="src" excludes="META-INF/**"/>
+        </zip>
+    </target>
+    <!-- =====================================================
+       target: zip
+       ===================================================== -->
+    <!-- dependency on jar target to ensure we use same version number in extension.xml and bundle.xml -->
+    <target name="zip" description="create extension bundle ZIP for distribution"
+            depends="clean,-init,-jar,-distsrc,-javadoc">
+        <zip destfile="${deploy.dir}/${zip.name}">
+            <zipfileset prefix="META-INF" file="bundle.xml"/>
+            <zipfileset dir="${deploy.dir}" includes="${extension.id}.jar"/>
+            <zipfileset dir="${deploy.dir}" includes="${extension.id}*.zip" prefix="${extension.id}/"/>
+        </zip>
+        <!-- append build id to version in bundle.xml in zip -->
+        <unzip src="${deploy.dir}/${zip.name}" dest="${deploy.dir}">
+            <patternset includes="META-INF/bundle.xml"/>
+        </unzip>
+        <sleep seconds="2"/>
+        <!-- timestamp in ZIP has 2 seconds granularity. Wait long enough to ensure touched xml is new enough -->
+        <replaceregexp file="${deploy.dir}/META-INF/bundle.xml" match="(&lt;u:version>[^&lt;]*)(&lt;)"
+                       replace="\1.${BUILDID}\2" flags="s"/>
+        <zip update="true" destfile="${deploy.dir}/${zip.name}" basedir="${deploy.dir}" includes="META-INF/bundle.xml"/>
+    </target>
+    <!-- =====================================================
+       target: -taskdefs
+       ===================================================== -->
+    <target name="-taskdefs" depends="-init" description="load custom ant tasks">
+        <taskdef name="ojdeploy" uri="oraclelib:OJDeployAntTask"
+                 classname="oracle.jdeveloper.deploy.ant.OJDeployAntTask" classpath="${oracle.jdeveloper.ant.library}"/>
+    </target>
+</project>
