@@ -1,0 +1,18 @@
+# JDev gitignore
+# https://github.com/github/gitignore/blob/master/Global/JDeveloper.gitignore
+
+# default application storage directory used by the IDE Performance Cache feature
+.data/
+
+# used for ADF styles caching
+temp/
+
+# default output directories
+classes/
+deploy/
+javadoc/
+doc/
+
+# lock file, a part of Oracle Credential Store Framework
+cwallet.sso.lck
+
